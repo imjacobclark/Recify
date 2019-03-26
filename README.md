@@ -9,9 +9,9 @@ Access Tokens are stored in a single text file on disk after the initial authori
 ## Running
 
 ```shell
-$ export bearer="Basic <CLIENT_ID:CLIENT_SECRET>"
+$ export bearer="Basic base64(<CLIENT_ID:CLIENT_SECRET>)"
 $ export clientID="<CLIENT_ID>"
 $ stack build && stack exec recify-exe
 ```
 
-Then open localhost:3000/login in your web browser and login.
+Then open localhost:3000 in your web browser and login.
