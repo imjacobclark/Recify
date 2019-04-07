@@ -16,7 +16,10 @@ import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Lazy.Encoding as TLE
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text as T
+import qualified Data.Text.IO as DTIO
+
 import Data.Aeson.Lens (_String, key)
+
 import System.Environment
 
 newtype AuthorizationCode = AuthorizationCode {
@@ -41,9 +44,6 @@ textToByteString x = TE.encodeUtf8 x
 
 lazyByteStringToLazyText :: L.ByteString -> LT.Text
 lazyByteStringToLazyText x = TLE.decodeUtf8 x
-
-byteStringToLazyByteString :: B.ByteString -> L.ByteString
-byteStringToLazyByteString x = L.fromStrict x
 
 requestAccessTokenFromAuthorizationCode :: AuthorizationCode -> IO L.ByteString
 requestAccessTokenFromAuthorizationCode authorizationCode = do 
@@ -76,13 +76,13 @@ recify = scotty port $ do
       setHeader "Location" (LT.pack ("https://accounts.spotify.com/authorize?client_id=" ++ clientId ++ "&response_type=" ++ authorizationResponseType ++ "&redirect_uri=" ++ callbackUri ++ "&scope=" ++ authorizationScope))
     
     get "/dashboard" $ do
-      accessToken <- (liftIO $ readFile "./accessToken.txt")
-      playedTracks <- liftIO $ getCurrentUsersRecentlyPlayedTracks $ textToByteString $ getAccessToken $ AccessToken $ T.pack accessToken
+      accessToken <- (liftIO $ DTIO.readFile "./accessToken.txt")
+      playedTracks <- liftIO . getCurrentUsersRecentlyPlayedTracks . textToByteString . getAccessToken . AccessToken $ accessToken
       html $ mconcat ["<pre>", (lazyByteStringToLazyText playedTracks), "</pre>"]  
 
     get "/callback" $ do
       authorizationCode <- fmap AuthorizationCode $ param "code"
       accessTokenPayload <- liftIO $ requestAccessTokenFromAuthorizationCode authorizationCode
-      _ <- liftIO $ writeFile "./accessToken.txt" $ T.unpack $ getAccessToken $ getAccessTokenFromPayload accessTokenPayload
+      _ <- liftIO . writeFile "./accessToken.txt" . T.unpack . getAccessToken . getAccessTokenFromPayload $ accessTokenPayload
       status status302
       setHeader "Location" (LT.pack $ "/dashboard")
