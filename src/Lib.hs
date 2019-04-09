@@ -12,19 +12,23 @@ import qualified Network.Wreq as W
 import Control.Lens
 import qualified Data.ByteString.Char8 as B
 import qualified Data.ByteString.Lazy as L
-import qualified Data.Text.Encoding as TE
-import qualified Data.Text.Lazy.Encoding as TLE
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text as T
 import qualified Data.Text.IO as DTIO
+
+import Data.Aeson
 
 import Data.Aeson.Lens (_String, key)
 
 import System.Environment
 
+import StringUtils
+import RecentlyPlayedMarshall
+
 newtype AuthorizationCode = AuthorizationCode {
   getAuthorizationCode :: String
 }
+
 newtype AccessToken = AccessToken {
   getAccessToken :: T.Text
 }
@@ -38,12 +42,6 @@ accessTokenRequestUri = "https://accounts.spotify.com/api/token"
 recentlyPlayerUri = "https://api.spotify.com/v1/me/player/recently-played"
 
 port = 3000
-
-textToByteString :: T.Text -> B.ByteString
-textToByteString x = TE.encodeUtf8 x
-
-lazyByteStringToLazyText :: L.ByteString -> LT.Text
-lazyByteStringToLazyText x = TLE.decodeUtf8 x
 
 requestAccessTokenFromAuthorizationCode :: AuthorizationCode -> IO L.ByteString
 requestAccessTokenFromAuthorizationCode authorizationCode = do 
@@ -77,8 +75,9 @@ recify = scotty port $ do
     
     get "/dashboard" $ do
       accessToken <- (liftIO $ DTIO.readFile "./accessToken.txt")
-      playedTracks <- liftIO . getCurrentUsersRecentlyPlayedTracks . textToByteString . getAccessToken . AccessToken $ accessToken
-      html $ mconcat ["<pre>", (lazyByteStringToLazyText playedTracks), "</pre>"]  
+      recentlyPlayedTrackData <- liftIO . getCurrentUsersRecentlyPlayedTracks . textToByteString . getAccessToken . AccessToken $ accessToken
+      _ <- liftIO $ print (marshallRecentlyPlayedData recentlyPlayedTrackData)
+      html $ mconcat ["<pre>", (lazyByteStringToLazyText recentlyPlayedTrackData), "</pre>"]  
 
     get "/callback" $ do
       authorizationCode <- fmap AuthorizationCode $ param "code"

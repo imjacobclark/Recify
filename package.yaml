@@ -29,6 +29,7 @@ dependencies:
 - http-types
 - aeson
 - lens-aeson
+- vector
 
 library:
   source-dirs: src
