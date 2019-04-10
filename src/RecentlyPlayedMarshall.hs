@@ -21,21 +21,18 @@ newtype RecentlyPlayed = RecentlyPlayed {
 } deriving (Show)
 
 instance FromJSON RecentlyPlayed where
-  parseJSON (Object recentlyPlayed) = do
-    items <- recentlyPlayed .: "items"
-    RecentlyPlayed <$> parseJSON items
-  parseJSON _                       = fail "No object found..."
+  parseJSON = withObject "items" $ \recentlyPlayed -> RecentlyPlayed 
+    <$> recentlyPlayed .: "items"
 
 instance FromJSON Tracks where
-  parseJSON = withArray "items" $ \items ->
-    Tracks <$> mapM parseJSON (V.toList items)
+  parseJSON = withArray "items" $ \items -> Tracks 
+    <$> mapM parseJSON (V.toList items)
 
 instance FromJSON Track where
-  parseJSON (Object v) = Track 
-    <$> v .: "played_at" 
-    <*> (v .: "track" >>= (.: "album") >>= (.: "external_urls") >>= (.: "spotify"))
-    <*> (v .: "track" >>= (.: "name"))
-  parseJSON _          = fail "no object found"
+  parseJSON = withObject "tracks" $ \tracks -> Track 
+    <$> tracks .: "played_at" 
+    <*> (tracks .: "track" >>= (.: "album") >>= (.: "external_urls") >>= (.: "spotify"))
+    <*> (tracks .: "track" >>= (.: "name"))
 
 marshallRecentlyPlayedData :: L.ByteString -> Either String RecentlyPlayed
 marshallRecentlyPlayedData recentlyPlayedTracks = eitherDecode recentlyPlayedTracks

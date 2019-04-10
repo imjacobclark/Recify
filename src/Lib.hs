@@ -17,6 +17,7 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as DTIO
 
 import Data.Aeson
+import Data.Either
 
 import Data.Aeson.Lens (_String, key)
 
