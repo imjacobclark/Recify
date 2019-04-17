@@ -18,7 +18,6 @@ import qualified Data.Text.IO as DTIO
 
 import Data.Aeson
 import Data.Either
-
 import Data.Aeson.Lens (_String, key)
 
 import System.Environment
@@ -64,6 +63,9 @@ getCurrentUsersRecentlyPlayedTracks accessToken = do
 getAccessTokenFromPayload :: L.ByteString -> AccessToken
 getAccessTokenFromPayload json = AccessToken (json ^. key "access_token" . _String)
 
+getNameFromFirst [] = "no entries"
+getNameFromFirst (x:xs) = name x
+
 recify :: IO ()
 recify = scotty port $ do
     get "/" $ do
@@ -77,8 +79,13 @@ recify = scotty port $ do
     get "/dashboard" $ do
       accessToken <- (liftIO $ DTIO.readFile "./accessToken.txt")
       recentlyPlayedTrackData <- liftIO . getCurrentUsersRecentlyPlayedTracks . textToByteString . getAccessToken . AccessToken $ accessToken
-      _ <- liftIO $ print (marshallRecentlyPlayedData recentlyPlayedTrackData)
-      html $ mconcat ["<pre>", (lazyByteStringToLazyText recentlyPlayedTrackData), "</pre>"]  
+      
+      case (marshallRecentlyPlayedData recentlyPlayedTrackData) of
+        Right (marshalledRecentlyPlayed) -> html $ mconcat ["<pre>", (stringToLazyText (getNameFromFirst (tracks . recentlyPlayed . marshalledRecentlyPlayed))), "</pre>"]
+        Left (error) -> html $ mconcat ["Fail"]
+
+      -- _ <- liftIO $ print (tracks . recentlyPlayed $ (fromRight (RecentlyPlayed (Tracks [])) (marshallRecentlyPlayedData recentlyPlayedTrackData)))
+      -- html $ mconcat ["<pre>", (lazyByteStringToLazyText recentlyPlayedTrackData), "</pre>"]  
 
     get "/callback" $ do
       authorizationCode <- fmap AuthorizationCode $ param "code"

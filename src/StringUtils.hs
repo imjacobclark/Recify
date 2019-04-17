@@ -12,3 +12,6 @@ textToByteString x = TE.encodeUtf8 x
 
 lazyByteStringToLazyText :: L.ByteString -> LT.Text
 lazyByteStringToLazyText x = TLE.decodeUtf8 x
+
+stringToLazyText :: String -> LT.Text
+stringToLazyText x = LT.pack x

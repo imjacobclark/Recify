@@ -5,6 +5,7 @@ module RecentlyPlayedMarshall where
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Vector as V
 import Data.Aeson
+import Data.Either
 
 data Track = Track {
   playedAt :: String
