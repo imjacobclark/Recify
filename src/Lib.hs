@@ -19,6 +19,7 @@ import qualified Data.Text.IO as DTIO
 import Data.Aeson
 import Data.Either
 import Data.Aeson.Lens (_String, key)
+import Data.List
 
 import System.Environment
 
@@ -63,8 +64,8 @@ getCurrentUsersRecentlyPlayedTracks accessToken = do
 getAccessTokenFromPayload :: L.ByteString -> AccessToken
 getAccessTokenFromPayload json = AccessToken (json ^. key "access_token" . _String)
 
-getNameFromFirst [] = "no entries"
-getNameFromFirst (x:xs) = name x
+buildRecentlyPlayedHTMLList [] = []
+buildRecentlyPlayedHTMLList (xs) = concat . intersperse "<br>" $ fmap (\x -> "<li>" ++ (name x) ++ "</li>") xs
 
 recify :: IO ()
 recify = scotty port $ do
@@ -81,11 +82,8 @@ recify = scotty port $ do
       recentlyPlayedTrackData <- liftIO . getCurrentUsersRecentlyPlayedTracks . textToByteString . getAccessToken . AccessToken $ accessToken
       
       case (marshallRecentlyPlayedData recentlyPlayedTrackData) of
-        Right (marshalledRecentlyPlayed) -> html $ mconcat ["<pre>", (stringToLazyText (getNameFromFirst (tracks . recentlyPlayed . marshalledRecentlyPlayed))), "</pre>"]
+        Right (marshalledRecentlyPlayed) -> html $ mconcat ["<ul>", (stringToLazyText . buildRecentlyPlayedHTMLList . tracks . recentlyPlayed $ marshalledRecentlyPlayed), "</ul>"]
         Left (error) -> html $ mconcat ["Fail"]
-
-      -- _ <- liftIO $ print (tracks . recentlyPlayed $ (fromRight (RecentlyPlayed (Tracks [])) (marshallRecentlyPlayedData recentlyPlayedTrackData)))
-      -- html $ mconcat ["<pre>", (lazyByteStringToLazyText recentlyPlayedTrackData), "</pre>"]  
 
     get "/callback" $ do
       authorizationCode <- fmap AuthorizationCode $ param "code"
