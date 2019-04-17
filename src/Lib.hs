@@ -64,6 +64,7 @@ getCurrentUsersRecentlyPlayedTracks accessToken = do
 getAccessTokenFromPayload :: L.ByteString -> AccessToken
 getAccessTokenFromPayload json = AccessToken (json ^. key "access_token" . _String)
 
+buildRecentlyPlayedHTMLList :: [Track] -> String
 buildRecentlyPlayedHTMLList [] = []
 buildRecentlyPlayedHTMLList (xs) = concat . intersperse "<br>" $ fmap (\x -> "<li>" ++ (name x) ++ "</li>") xs
 
