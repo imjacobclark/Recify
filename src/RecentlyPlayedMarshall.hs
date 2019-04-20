@@ -7,23 +7,32 @@ import qualified Data.Vector as V
 import Data.Aeson
 import Data.Either
 
+data Artist = Artist {
+  id :: String
+  , href :: String
+  , artistName :: String
+} deriving (Show)
+
 data Track = Track {
   playedAt :: String
   , externalUrls :: String
   , name :: String
+  , artists :: [Artist]
 } deriving (Show)
 
-newtype Tracks = Tracks {
-  tracks :: [Track] 
+data Tracks = Tracks {
+  tracks :: [Track]
 } deriving (Show)
 
-newtype RecentlyPlayed = RecentlyPlayed {
-  recentlyPlayed :: Tracks 
+data RecentlyPlayed = RecentlyPlayed {
+  recentlyPlayed :: Tracks
+  , next :: String
 } deriving (Show)
 
 instance FromJSON RecentlyPlayed where
   parseJSON = withObject "items" $ \recentlyPlayed -> RecentlyPlayed 
     <$> recentlyPlayed .: "items"
+    <*> recentlyPlayed .: "next"
 
 instance FromJSON Tracks where
   parseJSON = withArray "items" $ \items -> Tracks 
@@ -34,6 +43,13 @@ instance FromJSON Track where
     <$> tracks .: "played_at" 
     <*> (tracks .: "track" >>= (.: "album") >>= (.: "external_urls") >>= (.: "spotify"))
     <*> (tracks .: "track" >>= (.: "name"))
+    <*> (tracks .: "track" >>= (.: "artists"))
+
+instance FromJSON Artist where
+  parseJSON = withObject "artists" $ \artists -> Artist
+    <$> artists .: "id"
+    <*> artists .: "href"
+    <*> artists .: "name"
 
 marshallRecentlyPlayedData :: L.ByteString -> Either String RecentlyPlayed
 marshallRecentlyPlayedData recentlyPlayedTracks = eitherDecode recentlyPlayedTracks
