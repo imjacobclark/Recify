@@ -4,7 +4,7 @@ A proof of concept Spotify track recomender using K Nearest Neighbours.
 
 This is pretty rough around the edges, I haven't unit tested it, rolled my own simple Mustache and CSV parser and generally thrown caution to the wind **in order to focus on the core purpose of the project** (Which is learning Haskell, KNN and the Spotify API).
 
-PRs welcome, feedback welcome - once "complete" I'll probably write up my approach, see _Technical Details_ below for more on that now without having to go through the source code.
+PRs welcome, feedback welcome - once "complete" I'll probably write up my approach, see _Technical Details_ below for more on that now without having to go through the source code or wait 'til it's complete.
 
 ## Tech 📸
 
