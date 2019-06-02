@@ -31,10 +31,14 @@ seperateFieldsByDelimiter rows = concat . intersperse "," . fmap fieldsToString 
 seperateRowsByDelimiter :: [Row] -> [Char]
 seperateRowsByDelimiter rows = concat . intersperse "\n" . fmap seperateFieldsByDelimiter $ rows
 
+getArtistsFromTrack :: RPM.Track -> String
+getArtistsFromTrack track = concat . intersperse " | " $ fmap (\artist -> (RPM.artistName artist)) (RPM.artists track)
+
 createCSV :: RPM.RecentlyPlayed -> CSV
 createCSV recentlyPlayed = CSV . fmap (\track -> 
     Row [
         Field . RPM.name $ track,
+        Field . getArtistsFromTrack $ track,
         Field . boolToString . RPM.explicit $ track
         ]
     ) . RPM.tracks . RPM.recentlyPlayed $ recentlyPlayed

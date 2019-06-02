@@ -71,7 +71,7 @@ getArtistsFromTrack track = concat . intersperse ", " $ fmap (\artist -> (RPM.ar
 
 buildRecentlyPlayedHTMLList :: [RPM.Track] -> String
 buildRecentlyPlayedHTMLList [] = []
-buildRecentlyPlayedHTMLList (tracks) = concat . intersperse "<br>" $ fmap (\track -> "<li>" ++ (RPM.name track) ++ " - " ++ (getArtistsFromTrack track) ++ "</li>") tracks
+buildRecentlyPlayedHTMLList (tracks) = concat . intersperse "<br>" $ fmap (\track -> "<li>" ++ (RPM.name track) ++ " - " ++ (Lib.getArtistsFromTrack track) ++ "</li>") tracks
 
 getRecentlyPlayedHTMLResponse :: RPM.RecentlyPlayed -> IO LT.Text
 getRecentlyPlayedHTMLResponse recentlyPlayed = do
@@ -82,28 +82,17 @@ getNextRecentlyPlayedTracksHref :: RPM.RecentlyPlayed -> LT.Text
 getNextRecentlyPlayedTracksHref recentlyPlayed = stringToLazyText . RPM.next $ recentlyPlayed
 
 buildResponse :: LT.Text -> LT.Text -> ActionM ()
-buildResponse recentlyPlayedHTML nextHTML = html $ mconcat [
-  "<!DOCTYPE html><html><head><title>Recify</title><meta name='viewport' content='width=device-width, initial-scale=1'><style>body { max-width: 1024px; margin: 0 auto; padding: 10px }; main { width:  100%; };</style></head><body>",
-  "<main>",
-  "<h1>Recify</h1><hr />", 
-  "<p>Here is your recently played track list:</p>",
-  "<ul>", recentlyPlayedHTML,"</ul>",
-  "<p>Next: ", nextHTML, "</p>",
-  "<hr /><footer>Recify and Jacob Clark 2019 &middot; <a href='https://www.github.com/imjacobclark/recify' style='color: #1db954'>Recify on GitHub</a></footer>",
-  "</p></main></body></html>"]
+buildResponse recentlyPlayedHTML nextHTML = do
+        dashboardHtml <- (liftIO $ DTIO.readFile "./static/dashboard.html")
+        html $ mconcat [
+          LT.replace "{{nextHTML}}" nextHTML (LT.replace "{{recentlyPlayedHTML}}" recentlyPlayedHTML (LT.fromStrict dashboardHtml))
+          ]  
 
 recify :: IO ()
 recify = scotty port $ do
     get "/" $ do
-      html $ mconcat [
-        "<!DOCTYPE html><html><head><title>Recify</title><meta name='viewport' content='width=device-width, initial-scale=1'><style>body { max-width: 1024px; margin: 0 auto; padding: 10px }; main { width:  100%; };</style></head><body>",
-        "<main>",
-        "<h1>Recify</h1><hr />", 
-        "<p>In order to proceed you need to give Recify permission to access bits of your Spotify profile.</p>", 
-        "<p>---> <a href='/grant' style='color: #1db954'>Grant permission now!</a> <---</p>",
-        "<p>Recify will request delegated access to your recently played tracks stored on Spotify. It will use these tracks to analyze and generate recomendations on songs you may like to listen to next.</p>",
-        "<hr /><footer>Recify and Jacob Clark 2019 &middot; <a href='https://www.github.com/imjacobclark/recify' style='color: #1db954'>Recify on GitHub</a></footer>",
-        "</p></main></body></html>"]  
+      homeHtml <- (liftIO $ DTIO.readFile "./static/home.html")
+      html $ mconcat [LT.replace "Recify" "Nope" (LT.fromStrict homeHtml)]  
 
     get "/grant" $ do
       clientId <- liftIO $ getEnv "clientID"
