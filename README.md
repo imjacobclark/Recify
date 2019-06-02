@@ -2,6 +2,8 @@
 
 A proof of concept Spotify track recomender using K Nearest Neighbours.
 
+This is pretty rough around the edges, I haven't unit tested it, rolled my own simple Mustache and CSV parser and generally thrown caution to the wind *in order to focus on the core purpose of the project* (I may clean it up later).
+
 ## Tech 📸
 
 - Spotify API (thanks Spotify)
