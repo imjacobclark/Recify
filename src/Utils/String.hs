@@ -1,4 +1,4 @@
-module StringUtils where
+module Utils.String where
 
 import qualified Data.Text.Lazy.Encoding as TLE
 import qualified Data.Text.Lazy as LT

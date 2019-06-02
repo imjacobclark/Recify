@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module RecentlyPlayedMarshall where
+module Models.RecentlyPlayed where
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Vector as V

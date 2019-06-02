@@ -1,6 +1,6 @@
 module Main where
 
-import Lib
+import Recify
 
 main :: IO ()
 main = recify

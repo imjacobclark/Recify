@@ -1,10 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module CSVWriter where
+module Writers.CSV where
 
 import Data.List
 
-import qualified RecentlyPlayedMarshall as RPM
+import qualified Models.RecentlyPlayed as RP
 
 boolToString :: Bool -> String
 boolToString True = "1"
@@ -31,17 +31,17 @@ seperateFieldsByDelimiter rows = concat . intersperse "," . fmap fieldsToString 
 seperateRowsByDelimiter :: [Row] -> [Char]
 seperateRowsByDelimiter rows = concat . intersperse "\n" . fmap seperateFieldsByDelimiter $ rows
 
-getArtistsFromTrack :: RPM.Track -> String
-getArtistsFromTrack track = concat . intersperse " | " $ fmap (\artist -> (RPM.artistName artist)) (RPM.artists track)
+getArtistsFromTrack :: RP.Track -> String
+getArtistsFromTrack track = concat . intersperse " | " $ fmap (\artist -> (RP.artistName artist)) (RP.artists track)
 
-createCSV :: RPM.RecentlyPlayed -> CSV
+createCSV :: RP.RecentlyPlayed -> CSV
 createCSV recentlyPlayed = CSV . fmap (\track -> 
     Row [
-        Field . RPM.name $ track,
+        Field . RP.name $ track,
         Field . getArtistsFromTrack $ track,
-        Field . boolToString . RPM.explicit $ track
+        Field . boolToString . RP.explicit $ track
         ]
-    ) . RPM.tracks . RPM.recentlyPlayed $ recentlyPlayed
+    ) . RP.tracks . RP.recentlyPlayed $ recentlyPlayed
 
-writeCsvToDisk :: RPM.RecentlyPlayed -> IO ()
+writeCsvToDisk :: RP.RecentlyPlayed -> IO ()
 writeCsvToDisk recentlyPlayed = writeFile "./recentlyPlayed.csv" . seperateRowsByDelimiter . csv . createCSV $ recentlyPlayed

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Lib
+module Recify
     ( recify,
       getAccessTokenFromPayload
     ) where
@@ -23,18 +23,11 @@ import Data.List
 
 import System.Environment
 
-import StringUtils
-
-import CSVWriter
-import qualified RecentlyPlayedMarshall as RPM
-
-newtype AuthorizationCode = AuthorizationCode {
-  getAuthorizationCode :: String
-}
-
-newtype AccessToken = AccessToken {
-  getAccessToken :: T.Text
-}
+import Utils.String
+import Writers.CSV
+import Writers.HTML
+import qualified Models.RecentlyPlayed as RP
+import Services.SpotifyAuthorization
 
 authorizationScope = "user-read-recently-played, user-top-read"
 authorizationResponseType = "code"
@@ -63,31 +56,6 @@ getCurrentUsersRecentlyPlayedTracks accessToken uri = do
   text <- liftIO $ (W.getWith options uri)
   return $ text ^. W.responseBody
 
-getAccessTokenFromPayload :: L.ByteString -> AccessToken
-getAccessTokenFromPayload json = AccessToken (json ^. key "access_token" . _String)
-
-getArtistsFromTrack :: RPM.Track -> String
-getArtistsFromTrack track = concat . intersperse ", " $ fmap (\artist -> (RPM.artistName artist)) (RPM.artists track)
-
-buildRecentlyPlayedHTMLList :: [RPM.Track] -> String
-buildRecentlyPlayedHTMLList [] = []
-buildRecentlyPlayedHTMLList (tracks) = concat . intersperse "<br>" $ fmap (\track -> "<li>" ++ (RPM.name track) ++ " - " ++ (Lib.getArtistsFromTrack track) ++ "</li>") tracks
-
-getRecentlyPlayedHTMLResponse :: RPM.RecentlyPlayed -> IO LT.Text
-getRecentlyPlayedHTMLResponse recentlyPlayed = do
-  _ <- writeCsvToDisk recentlyPlayed
-  return (stringToLazyText . buildRecentlyPlayedHTMLList . RPM.tracks . RPM.recentlyPlayed $ recentlyPlayed)
-
-getNextRecentlyPlayedTracksHref :: RPM.RecentlyPlayed -> LT.Text
-getNextRecentlyPlayedTracksHref recentlyPlayed = stringToLazyText . RPM.next $ recentlyPlayed
-
-buildResponse :: LT.Text -> LT.Text -> ActionM ()
-buildResponse recentlyPlayedHTML nextHTML = do
-        dashboardHtml <- (liftIO $ DTIO.readFile "./static/dashboard.html")
-        html $ mconcat [
-          LT.replace "{{nextHTML}}" nextHTML (LT.replace "{{recentlyPlayedHTML}}" recentlyPlayedHTML (LT.fromStrict dashboardHtml))
-          ]  
-
 recify :: IO ()
 recify = scotty port $ do
     get "/" $ do
@@ -102,7 +70,7 @@ recify = scotty port $ do
     get "/callback" $ do
       authorizationCode <- fmap AuthorizationCode $ param "code"
       accessTokenPayload <- liftIO $ requestAccessTokenFromAuthorizationCode authorizationCode
-      _ <- liftIO . writeFile "./accessToken.txt" . T.unpack . getAccessToken . getAccessTokenFromPayload $ accessTokenPayload
+      _ <- liftIO . writeAccessTokenToDisk $ accessTokenPayload
       status status302
       setHeader "X-Forwarded-From" "/callback"
       setHeader "Location" (LT.pack $ "/dashboard")
@@ -111,7 +79,7 @@ recify = scotty port $ do
       accessTokenFileData <- (liftIO $ DTIO.readFile "./accessToken.txt")
       recentlyPlayedTrackData <- liftIO $ (getCurrentUsersRecentlyPlayedTracks (textToByteString . getAccessToken . AccessToken $ accessTokenFileData) recentlyPlayerUri)
       
-      let maybeMarshalledRecentlyPlayed = (RPM.marshallRecentlyPlayedData recentlyPlayedTrackData)
+      let maybeMarshalledRecentlyPlayed = (RP.marshallRecentlyPlayedData recentlyPlayedTrackData)
 
       case maybeMarshalledRecentlyPlayed of
         Right (marshalledRecentlyPlayed) -> do 
