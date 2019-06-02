@@ -2,7 +2,7 @@
 
 module Writers.HTML where
 
-import qualified Models.RecentlyPlayed as RP
+import qualified Types.RecentlyPlayed as RP
 import Data.List
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.IO as DTIO

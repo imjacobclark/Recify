@@ -26,7 +26,7 @@ import System.Environment
 import Utils.String
 import Writers.CSV
 import Writers.HTML
-import qualified Models.RecentlyPlayed as RP
+import qualified Types.RecentlyPlayed as RP
 import Services.SpotifyAuthorization
 
 authorizationScope = "user-read-recently-played, user-top-read"
@@ -60,7 +60,7 @@ recify :: IO ()
 recify = scotty port $ do
     get "/" $ do
       homeHtml <- (liftIO $ DTIO.readFile "./static/home.html")
-      html $ mconcat [LT.replace "Recify" "Nope" (LT.fromStrict homeHtml)]  
+      html $ mconcat [(LT.fromStrict homeHtml)]  
 
     get "/grant" $ do
       clientId <- liftIO $ getEnv "clientID"

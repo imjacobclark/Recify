@@ -4,7 +4,7 @@ module Writers.CSV where
 
 import Data.List
 
-import qualified Models.RecentlyPlayed as RP
+import qualified Types.RecentlyPlayed as RP
 
 boolToString :: Bool -> String
 boolToString True = "1"
