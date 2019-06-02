@@ -5,7 +5,7 @@ A proof of concept Spotify track recomender using K Nearest Neighbours.
 ## Tech 📸
 
 - Spotify API (thanks Spotify)
-- Haskell
+- Haskell via Stack
 - Scotty (Haskell Web Server)
 - Aeson (Haskell JSON utilitiy)
 - wreq (Haskell HTTP utility)
@@ -23,24 +23,46 @@ A proof of concept Spotify track recomender using K Nearest Neighbours.
 - [ ] Store most recent track listings (latest 25) in DynamoDB
 - [ ] Recursivley gather all past listening history and store in  DynamoDB
 - [ ] Listen and update DynamoDB when new tracks are played
-- [ ] Populate DynamoDB with non-listened to song data to establish a our two distinct classes (listened too [liked] verses non-listened too [disliked])
+- [ ] Populate DynamoDB with non-listened to song data to establish our two distinct classes (listened too [liked] verses non-listened too [disliked])
 - [ ] Perform a train a K Nearest Neighbours algorithm and to generate song recomendations from todays charts
 
 ## Warning 🚨
 
-Whilst Recify only requests Access a scope of `user-read-recently-played, user-top-read` please be aware that tokens are stored in a single text file on disk after the initial authorization token is exchanged for an access token - *this will eventually be AES Encrypted and stored remotley*. `accessToken.txt` is `.gitignored`, do not share this file or its contents, it is advised you clean this file up when you're done - whilst the requested scope is non-destructive, better to be safe than sorry.
+Whilst Recify only requests a scope of `user-read-recently-played, user-top-read` please be aware that tokens are stored in a single text file on disk after the initial authorization token is exchanged for an access token - *this will eventually be AES Encrypted and stored remotley*. `accessToken.txt` is `.gitignored`, do not share this file or its contents, it is advised you clean this file up when you're done - whilst the requested scope is non-destructive, better to be safe than sorry.
 
 ## Running 🔌
 
+First, [ensure you have Stack installed](https://docs.haskellstack.org/en/stable/README/), this project uses it to compile and execute Haskell code.
+
+You'll need a [Spotify developer account](https://developer.spotify.com/dashboard/applications) where you'll create a new application in order to obtain you applications *Client ID* and *Client Secret* - the Client Secret should be treated as you would a normal password. These two values together with some processing produce your bearer token which identifies you to the Spotify API and allow you to configure callbacks, they also ensure clients don't abuse the Spotify API.
+
+In order to process a bearer token, you need to obtain both the client ID and secret from your application within the Spotify API dashboard, you'll then concatinate them together with a delimiter of `:` and base64 encode them. Heres a little JavaScript snippet you can run in a browser console to do just that:
+
+```javascript
+btoa("replace_with_you_Client_ID" + ":" + "replace_with_you_Client_Secret")
+```
+
+Once you have your base64 encoded credentials, we can set them as environment variables on your local machine (note: we do this to protect the credentials, environment variables ensure they are not checked into version control or stored on disk, although they are still visible to anybody with access to the machine).
+
 ```shell
-$ export bearer="Basic base64(<CLIENT_ID:CLIENT_SECRET>)"
-$ export clientID="<CLIENT_ID>"
+$ export bearer="Basic replace_with_your_bearer_token"
+```
+
+Spotify also needs Client ID sent in plain text (this is OK as its not the secret), so we create an environment variable for that too.
+
+```shell
+$ export clientID="replace_with_your_client_id"
+```
+
+Finally we can compile and run the application.
+
+```shell
 $ stack build && stack exec recify-exe
 ```
 
-Then open [localhost:3000](localhost:3000) in your web browser and login.
+Once this successfully completes, you can open [localhost:3000](localhost:3000) in your web browser and follow the instructions.
 
-## Technical Details
+## Technical Details ✍️
 
 Currently Recify does the following:
 
