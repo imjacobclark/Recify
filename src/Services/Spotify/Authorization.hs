@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Services.SpotifyAuthorization where
+module Services.Spotify.Authorization where
 
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as L
@@ -12,14 +12,7 @@ import Control.Monad.IO.Class
 import Data.ByteString.Internal
 
 import Utils.String
-
-newtype AuthorizationCode = AuthorizationCode {
-  getAuthorizationCode :: String
-}
-
-newtype AccessToken = AccessToken {
-  getAccessToken :: T.Text
-}
+import Types.SpotifyAuthorization
 
 getAccessTokenFromPayload :: L.ByteString -> AccessToken
 getAccessTokenFromPayload json = AccessToken (json ^. key "access_token" . _String)
