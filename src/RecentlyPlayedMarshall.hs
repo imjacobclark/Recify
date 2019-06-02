@@ -18,6 +18,7 @@ data Track = Track {
   , externalUrls :: String
   , name :: String
   , artists :: [Artist]
+  , explicit :: Bool
 } deriving (Show)
 
 data Tracks = Tracks {
@@ -44,6 +45,7 @@ instance FromJSON Track where
     <*> (tracks .: "track" >>= (.: "album") >>= (.: "external_urls") >>= (.: "spotify"))
     <*> (tracks .: "track" >>= (.: "name"))
     <*> (tracks .: "track" >>= (.: "artists"))
+    <*> (tracks .: "track" >>= (.: "explicit"))
 
 instance FromJSON Artist where
   parseJSON = withObject "artists" $ \artists -> Artist

@@ -24,6 +24,8 @@ import Data.List
 import System.Environment
 
 import StringUtils
+
+import CSVWriter
 import qualified RecentlyPlayedMarshall as RPM
 
 newtype AuthorizationCode = AuthorizationCode {
@@ -65,29 +67,28 @@ getAccessTokenFromPayload :: L.ByteString -> AccessToken
 getAccessTokenFromPayload json = AccessToken (json ^. key "access_token" . _String)
 
 getArtistsFromTrack :: RPM.Track -> String
-getArtistsFromTrack track = concat . intersperse ", " $ fmap (\x -> (RPM.artistName x)) (RPM.artists track)
+getArtistsFromTrack track = concat . intersperse ", " $ fmap (\artist -> (RPM.artistName artist)) (RPM.artists track)
 
 buildRecentlyPlayedHTMLList :: [RPM.Track] -> String
 buildRecentlyPlayedHTMLList [] = []
-buildRecentlyPlayedHTMLList (xs) = concat . intersperse "<br>" $ fmap (\x -> "<li>" ++ (RPM.name x) ++ " - " ++ (getArtistsFromTrack x) ++ "</li>") xs
+buildRecentlyPlayedHTMLList (tracks) = concat . intersperse "<br>" $ fmap (\track -> "<li>" ++ (RPM.name track) ++ " - " ++ (getArtistsFromTrack track) ++ "</li>") tracks
 
--- getListenedToGenres :: Either String RPM.RecentlyPlayed -> RPM.RecentlyPlayed
--- getListenedToGenres (Right x) = do
---   x
--- getListenedToGenres (Left x) = RPM.RecentlyPlayed (RPM.Tracks []) "http://next/noop"
+getRecentlyPlayedHTMLResponse :: RPM.RecentlyPlayed -> IO LT.Text
+getRecentlyPlayedHTMLResponse recentlyPlayed = do
+  _ <- writeCsvToDisk recentlyPlayed
+  return (stringToLazyText . buildRecentlyPlayedHTMLList . RPM.tracks . RPM.recentlyPlayed $ recentlyPlayed)
 
-buildResponse :: RPM.RecentlyPlayed -> ActionM ()
-buildResponse marshalledRecentlyPlayed = html $ mconcat [
+getNextRecentlyPlayedTracksHref :: RPM.RecentlyPlayed -> LT.Text
+getNextRecentlyPlayedTracksHref recentlyPlayed = stringToLazyText . RPM.next $ recentlyPlayed
+
+buildResponse :: LT.Text -> LT.Text -> ActionM ()
+buildResponse recentlyPlayedHTML nextHTML = html $ mconcat [
   "<!DOCTYPE html><html><head><title>Recify</title><meta name='viewport' content='width=device-width, initial-scale=1'><style>body { max-width: 1024px; margin: 0 auto; padding: 10px }; main { width:  100%; };</style></head><body>",
   "<main>",
   "<h1>Recify</h1><hr />", 
   "<p>Here is your recently played track list:</p>",
-  "<ul>", 
-  (stringToLazyText . buildRecentlyPlayedHTMLList . RPM.tracks . RPM.recentlyPlayed $ marshalledRecentlyPlayed), 
-  "</ul>",
-  "<p>Next: ",
-  (stringToLazyText . RPM.next $ marshalledRecentlyPlayed),
-  "</p>",
+  "<ul>", recentlyPlayedHTML,"</ul>",
+  "<p>Next: ", nextHTML, "</p>",
   "<hr /><footer>Recify and Jacob Clark 2019 &middot; <a href='https://www.github.com/imjacobclark/recify' style='color: #1db954'>Recify on GitHub</a></footer>",
   "</p></main></body></html>"]
 
@@ -122,8 +123,9 @@ recify = scotty port $ do
       recentlyPlayedTrackData <- liftIO $ (getCurrentUsersRecentlyPlayedTracks (textToByteString . getAccessToken . AccessToken $ accessTokenFileData) recentlyPlayerUri)
       
       let maybeMarshalledRecentlyPlayed = (RPM.marshallRecentlyPlayedData recentlyPlayedTrackData)
-      -- let maybeMarshalledGenres = (getListenedToGenres maybeMarshalledRecentlyPlayed)
 
       case maybeMarshalledRecentlyPlayed of
-        Right (marshalledRecentlyPlayed) -> buildResponse marshalledRecentlyPlayed
+        Right (marshalledRecentlyPlayed) -> do 
+          recentlyPlayedHTMLResponse <- liftIO $ getRecentlyPlayedHTMLResponse marshalledRecentlyPlayed
+          buildResponse recentlyPlayedHTMLResponse (getNextRecentlyPlayedTracksHref marshalledRecentlyPlayed)
         Left (error) -> html $ mconcat ["Something when wrong getting data from Spotify, refresh to try again."]
