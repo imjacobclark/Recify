@@ -18,9 +18,11 @@ import Services.Spotify.Authorization
 
 import Clients.Spotify.Authorization
 import Clients.Spotify.RecentlyPlayed
+import Clients.Spotify.Artist
 
 import Types.SpotifyAuthorization
 import Types.RecentlyPlayed
+import Types.Artist
 
 authorizationScope = "user-read-recently-played, user-top-read"
 authorizationResponseType = "code"
@@ -51,18 +53,29 @@ recify = scotty port $ do
       accessTokenFileData <- (liftIO $ DTIO.readFile "./accessToken.txt")
 
       recentlyPlayedTrackData <- liftIO $ (getCurrentUsersRecentlyPlayedTracks (textToByteString . getAccessToken . AccessToken $ accessTokenFileData))
-      
       let maybeMarshalledRecentlyPlayed = (marshallRecentlyPlayedData recentlyPlayedTrackData)
-
+    
       case maybeMarshalledRecentlyPlayed of
         Right (marshalledRecentlyPlayed) -> do 
-
-          -- let d = concat $ fmap (\track -> concat $ fmap (\artist -> href $ artist) (artists $ track)) $ tracks . recentlyPlayed $ marshalledRecentlyPlayed
-          -- liftIO $ putStrLn d
-
           recentlyPlayedHTMLResponse <- liftIO $ getRecentlyPlayedHTMLResponse marshalledRecentlyPlayed
 
           let nextRecentlyPlayedTracksHref = getNextRecentlyPlayedTracksHref marshalledRecentlyPlayed
           
+          -- Get Artist Data Start
+          artistData <- liftIO $ ((getArtist (Types.RecentlyPlayed.id (artists ((tracks . recentlyPlayed $ marshalledRecentlyPlayed) !! 0) !! 0))) (textToByteString . getAccessToken . AccessToken $ accessTokenFileData))
+          let maybeMarshalledArtist = (marshallArtistData artistData)
+
+          artist <- case maybeMarshalledArtist of
+            Right (marshalledArtist) -> do  
+              return $ (genres marshalledArtist)
+            Left (error) -> do
+              return $ ["Something went wrong getting data from Spotify, refresh to try again."]
+
+          liftIO $ putStrLn (artist !! 0)
+          liftIO $ putStrLn (artist !! 1)
+          liftIO $ putStrLn (artist !! 2)
+          -- Get Arist Data Stop
+
           buildResponse recentlyPlayedHTMLResponse nextRecentlyPlayedTracksHref
-        Left (error) -> html $ mconcat ["Something went wrong getting data from Spotify, refresh to try again."]
+        Left (error) -> do
+          html $ mconcat ["Something went wrong getting data from Spotify, refresh to try again."]
