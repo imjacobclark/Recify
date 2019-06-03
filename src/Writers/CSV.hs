@@ -34,13 +34,9 @@ seperateRowsByDelimiter rows = concat . intersperse "\n" . fmap seperateFieldsBy
 getArtistsFromTrack :: RP.Track -> String
 getArtistsFromTrack track = concat . intersperse " | " $ fmap (\artist -> (RP.artistName artist)) (RP.artists track)
 
-getArtistIdFromTrack :: RP.Track -> String
-getArtistIdFromTrack track = concat $ fmap (\artist -> (RP.id artist)) (RP.artists track)
-
 createCSV :: RP.RecentlyPlayed -> CSV
 createCSV recentlyPlayed = CSV . fmap (\track -> 
     Row [
-        Field . getArtistIdFromTrack $ track,
         Field . RP.name $ track,
         Field . getArtistsFromTrack $ track,
         Field . boolToString . RP.explicit $ track
