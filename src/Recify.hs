@@ -76,18 +76,13 @@ recify = scotty port $ do
                   RPWA.id = Types.RecentlyPlayed.id $ artist,
                   RPWA.href = href $ artist,
                   RPWA.artistName = artistName $ artist,
-                  RPWA.genres = concat $ fmap (\artist -> Types.Artist.genres $ artist) artists
+                  RPWA.genres = concat $ fmap (Types.Artist.genres) artists
                 }) (Types.RecentlyPlayed.artists $ track),
                 RPWA.playedAt = playedAt $ track
               }) . Types.RecentlyPlayed.tracks . recentlyPlayed $ marshalledRecentlyPlayed
             },
             RPWA.next = "x"
           } 
-
-          let x = ((RPWA.genres ((RPWA.artists $ ((RPWA.tracks . RPWA.recentlyPlayed $ tracks) !! 0)) !! 0)) !! 0)
-          let y = (RPWA.name ((RPWA.tracks . RPWA.recentlyPlayed $ tracks) !! 0))
-          liftIO $ putStrLn x
-          liftIO $ putStrLn y
 
           recentlyPlayedHTMLResponse <- liftIO $ getRecentlyPlayedHTMLResponse marshalledRecentlyPlayed
 
