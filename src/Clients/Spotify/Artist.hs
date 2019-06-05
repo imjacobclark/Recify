@@ -11,8 +11,8 @@ import Control.Lens
 
 recentlyPlayerUri = "https://api.spotify.com/v1/artists/"
 
-getArtist :: String -> B.ByteString -> IO L.ByteString
-getArtist id accessToken = do
+fetchArtistById :: String -> B.ByteString -> IO L.ByteString
+fetchArtistById id accessToken = do
   let options = W.defaults & W.header "Authorization" .~ [(B.pack "Bearer ") <> accessToken] 
   text <- liftIO $ (W.getWith options (recentlyPlayerUri ++ id))
-  return $ text ^. W.responseBody
+  return $ (text ^. W.responseBody)

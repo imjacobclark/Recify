@@ -27,9 +27,7 @@ buildRecentlyPlayedHTMLList :: [RP.Track] -> String
 buildRecentlyPlayedHTMLList [] = []
 buildRecentlyPlayedHTMLList (tracks) = concat . intersperse "<br>" $ fmap (\track -> "<li>" ++ (RP.name track) ++ " - " ++ (Writers.HTML.getArtistsFromTrack track) ++ "</li>") tracks
 
-buildResponse :: LT.Text -> LT.Text -> ActionM ()
+-- buildResponse :: LT.Text -> LT.Text -> m LT.Text
 buildResponse recentlyPlayedHTML nextHTML = do
-        dashboardHtml <- (liftIO $ DTIO.readFile "./static/dashboard.html")
-        html $ mconcat [
-          LT.replace "{{nextHTML}}" nextHTML (LT.replace "{{recentlyPlayedHTML}}" recentlyPlayedHTML (LT.fromStrict dashboardHtml))
-          ]  
+        dashboardHtml <- liftIO . DTIO.readFile $ "./static/dashboard.html"
+        return $ LT.replace "{{nextHTML}}" nextHTML (LT.replace "{{recentlyPlayedHTML}}" recentlyPlayedHTML (LT.fromStrict dashboardHtml))

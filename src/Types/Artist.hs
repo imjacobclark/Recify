@@ -7,6 +7,7 @@ import GHC.Generics
 import Data.Aeson
 
 data Artist = Artist {
+    id :: String,
     genres  :: [String]
 } deriving (Show, Generic)
 

@@ -11,8 +11,8 @@ import Control.Lens
 
 recentlyPlayerUri = "https://api.spotify.com/v1/me/player/recently-played"
 
-getCurrentUsersRecentlyPlayedTracks :: B.ByteString -> IO L.ByteString
-getCurrentUsersRecentlyPlayedTracks accessToken = do
+fetchCurrentUsersRecentlyPlayedTracks :: B.ByteString -> IO L.ByteString
+fetchCurrentUsersRecentlyPlayedTracks accessToken = do
   let options = W.defaults & W.header "Authorization" .~ [(B.pack "Bearer ") <> accessToken] 
   text <- liftIO $ (W.getWith options recentlyPlayerUri)
   return $ text ^. W.responseBody
