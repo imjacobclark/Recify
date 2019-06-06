@@ -27,11 +27,11 @@ import qualified Types.RecentlyPlayedWithArtist as RPWA
 
 authorizationScope = "user-read-recently-played, user-top-read"
 authorizationResponseType = "code"
-callbackUri = "http://localhost:3000/callback"
 
 recify :: IO ()
 recify = do
   port <- fmap read $ getEnv "PORT"
+  callbackUri <- getEnv "fqdn" ++ "/callback"
 
   scotty port $ do
     get "/" $ do
@@ -45,7 +45,7 @@ recify = do
   
     get "/callback" $ do
       authorizationCode <- fmap AuthorizationCode $ param "code"
-      _ <- liftIO $ exchangeAccessTokenForAuthorizationCode authorizationCode >>= writeAccessTokenToDisk
+      _ <- liftIO $ exchangeAccessTokenForAuthorizationCode authorizationCode callbackUri >>= writeAccessTokenToDisk
       status status302
       setHeader "X-Forwarded-From" "/callback"
       setHeader "Location" (LT.pack $ "/dashboard")
