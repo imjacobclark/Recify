@@ -21,7 +21,7 @@ exchangeAccessTokenForAuthorizationCode authorizationCode callbackUri = do
   let options = W.defaults & W.header "Authorization" .~ [(B.pack bearer)]
   let payload = [("code" :: B.ByteString, B.pack $ getAuthorizationCode authorizationCode :: B.ByteString)
                   , ("grant_type" :: B.ByteString, B.pack $ grantType :: B.ByteString)
-                  , ("redirect_uri" :: B.ByteString, B.pack $ callbackUri :: B.ByteString)
+                  , ("redirect_uri" :: B.ByteString, B.pack $ callbackUri ++ "/callback" :: B.ByteString)
                 ]
   text <- liftIO $ (W.postWith options accessTokenRequestUri payload)
   return $ text ^. W.responseBody

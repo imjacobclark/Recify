@@ -31,7 +31,7 @@ authorizationResponseType = "code"
 recify :: IO ()
 recify = do
   port <- fmap read $ getEnv "PORT"
-  callbackUri <- getEnv "fqdn" ++ "/callback"
+  fqdn <- (liftIO $ (getEnv "fqdn"))
 
   scotty port $ do
     get "/" $ do
@@ -41,11 +41,11 @@ recify = do
     get "/grant" $ do
       clientId <- liftIO $ getEnv "clientID"
       status status302
-      setHeader "Location" (LT.pack ("https://accounts.spotify.com/authorize?client_id=" ++ clientId ++ "&response_type=" ++ authorizationResponseType ++ "&redirect_uri=" ++ Recify.callbackUri ++ "&scope=" ++ authorizationScope))
+      setHeader "Location" (LT.pack ("https://accounts.spotify.com/authorize?client_id=" ++ clientId ++ "&response_type=" ++ authorizationResponseType ++ "&redirect_uri=" ++ fqdn ++ "/callback&scope=" ++ authorizationScope))
   
     get "/callback" $ do
       authorizationCode <- fmap AuthorizationCode $ param "code"
-      _ <- liftIO $ exchangeAccessTokenForAuthorizationCode authorizationCode callbackUri >>= writeAccessTokenToDisk
+      _ <- liftIO $ exchangeAccessTokenForAuthorizationCode authorizationCode fqdn >>= writeAccessTokenToDisk
       status status302
       setHeader "X-Forwarded-From" "/callback"
       setHeader "Location" (LT.pack $ "/dashboard")
