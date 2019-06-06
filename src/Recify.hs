@@ -31,7 +31,7 @@ callbackUri = "http://localhost:3000/callback"
 
 recify :: IO ()
 recify = do
-  port <- fmap read $ getEnv "port"
+  port <- fmap read $ getEnv "PORT"
 
   scotty port $ do
     get "/" $ do
