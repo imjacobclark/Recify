@@ -44,7 +44,7 @@ recify = scotty port $ do
   
     get "/callback" $ do
       authorizationCode <- fmap AuthorizationCode $ param "code"
-      _ <- liftIO $ requestAccessTokenFromAuthorizationCode authorizationCode >>= writeAccessTokenToDisk
+      _ <- liftIO $ exchangeAccessTokenForAuthorizationCode authorizationCode >>= writeAccessTokenToDisk
       status status302
       setHeader "X-Forwarded-From" "/callback"
       setHeader "Location" (LT.pack $ "/dashboard")
@@ -53,8 +53,8 @@ recify = scotty port $ do
       accessTokenFileData <- (liftIO $ DTIO.readFile "./accessToken.txt")
       let accessToken = textToByteString . getAccessToken . AccessToken $ accessTokenFileData
       
-      recentlyPlayedTrackData <- liftIO $ (fetchCurrentUsersRecentlyPlayedTracks accessToken)
-      let maybeMarshalledRecentlyPlayed = (marshallRecentlyPlayedData recentlyPlayedTrackData)
+      recentlyPlayedTrackData <- liftIO $ (fetchRecentlyPlayedTracks accessToken)
+      let maybeMarshalledRecentlyPlayed = (marshallRecentlyPlayedData recentlyPlayedTrackData) 
     
       case maybeMarshalledRecentlyPlayed of
         Right (marshalledRecentlyPlayed) -> do 
@@ -64,9 +64,9 @@ recify = scotty port $ do
             Right (marshalledArtistsData) -> do 
               return $ marshalledArtistsData
             Left (error) -> 
-              return $ []
+              return $ [] -- this needs to error, no point continuing
 
-          let tracks = RPWA.RecentlyPlayedWithArtist {
+          let recentlyPlayedWithArtist = RPWA.RecentlyPlayedWithArtist {
             RPWA.recentlyPlayed = RPWA.Tracks {
               RPWA.tracks = fmap (\track -> RPWA.Track {
                 RPWA.name = name $ track,
@@ -76,17 +76,17 @@ recify = scotty port $ do
                   RPWA.id = Types.RecentlyPlayed.id $ artist,
                   RPWA.href = href $ artist,
                   RPWA.artistName = artistName $ artist,
-                  RPWA.genres = concat $ fmap (Types.Artist.genres) artists
+                  RPWA.genres = concat . fmap (Types.Artist.genres) . filter (\artistToCompound -> (Types.Artist.id $ artistToCompound) == (Types.RecentlyPlayed.id $ artist)) $ artists
                 }) (Types.RecentlyPlayed.artists $ track),
                 RPWA.playedAt = playedAt $ track
               }) . Types.RecentlyPlayed.tracks . recentlyPlayed $ marshalledRecentlyPlayed
             },
-            RPWA.next = "x"
+            RPWA.next = Types.RecentlyPlayed.next $ marshalledRecentlyPlayed
           } 
 
-          recentlyPlayedHTMLResponse <- liftIO $ getRecentlyPlayedHTMLResponse marshalledRecentlyPlayed
+          recentlyPlayedHTMLResponse <- liftIO $ getRecentlyPlayedHTMLResponse recentlyPlayedWithArtist
 
-          let nextRecentlyPlayedTracksHref = getNextRecentlyPlayedTracksHref marshalledRecentlyPlayed
+          let nextRecentlyPlayedTracksHref = getNextRecentlyPlayedTracksHref recentlyPlayedWithArtist
 
           response <- (buildResponse recentlyPlayedHTMLResponse nextRecentlyPlayedTracksHref)
           html $ mconcat [response]

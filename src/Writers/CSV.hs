@@ -4,7 +4,7 @@ module Writers.CSV where
 
 import Data.List
 
-import qualified Types.RecentlyPlayed as RP
+import qualified Types.RecentlyPlayedWithArtist as RPWA
 
 boolToString :: Bool -> String
 boolToString True = "1"
@@ -31,17 +31,17 @@ seperateFieldsByDelimiter rows = concat . intersperse "," . fmap fieldsToString 
 seperateRowsByDelimiter :: [Row] -> [Char]
 seperateRowsByDelimiter rows = concat . intersperse "\n" . fmap seperateFieldsByDelimiter $ rows
 
-getArtistsFromTrack :: RP.Track -> String
-getArtistsFromTrack track = concat . intersperse " | " $ fmap (\artist -> (RP.artistName artist)) (RP.artists track)
+getArtistsFromTrack :: RPWA.Track -> String
+getArtistsFromTrack track = concat . intersperse " | " $ fmap (\artist -> (RPWA.artistName artist)) (RPWA.artists track)
 
-createCSV :: RP.RecentlyPlayed -> CSV
+createCSV :: RPWA.RecentlyPlayedWithArtist -> CSV
 createCSV recentlyPlayed = CSV . fmap (\track -> 
     Row [
-        Field . RP.name $ track,
+        Field . RPWA.name $ track,
         Field . getArtistsFromTrack $ track,
-        Field . boolToString . RP.explicit $ track
+        Field . boolToString . RPWA.explicit $ track
         ]
-    ) . RP.tracks . RP.recentlyPlayed $ recentlyPlayed
+    ) . RPWA.tracks . RPWA.recentlyPlayed $ recentlyPlayed
 
-writeCsvToDisk :: RP.RecentlyPlayed -> IO ()
+writeCsvToDisk :: RPWA.RecentlyPlayedWithArtist -> IO ()
 writeCsvToDisk recentlyPlayed = writeFile "./recentlyPlayed.csv" . seperateRowsByDelimiter . csv . createCSV $ recentlyPlayed

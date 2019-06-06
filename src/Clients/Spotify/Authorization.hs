@@ -16,8 +16,8 @@ grantType = "authorization_code"
 callbackUri = "http://localhost:3000/callback"
 accessTokenRequestUri = "https://accounts.spotify.com/api/token"
 
-requestAccessTokenFromAuthorizationCode :: AuthorizationCode -> IO L.ByteString
-requestAccessTokenFromAuthorizationCode authorizationCode = do 
+exchangeAccessTokenForAuthorizationCode :: AuthorizationCode -> IO L.ByteString
+exchangeAccessTokenForAuthorizationCode authorizationCode = do 
   bearer <- liftIO $ getEnv "bearer"
   let options = W.defaults & W.header "Authorization" .~ [(B.pack bearer)]
   let payload = [("code" :: B.ByteString, B.pack $ getAuthorizationCode authorizationCode :: B.ByteString)

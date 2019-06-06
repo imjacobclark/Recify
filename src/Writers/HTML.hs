@@ -2,7 +2,7 @@
 
 module Writers.HTML where
 
-import qualified Types.RecentlyPlayed as RP
+import qualified Types.RecentlyPlayedWithArtist as RPWA
 import Data.List
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.IO as DTIO
@@ -12,22 +12,23 @@ import Control.Monad.IO.Class
 import Writers.CSV
 import Utils.String
 
-getRecentlyPlayedHTMLResponse :: RP.RecentlyPlayed -> IO LT.Text
+getRecentlyPlayedHTMLResponse :: RPWA.RecentlyPlayedWithArtist -> IO LT.Text
 getRecentlyPlayedHTMLResponse recentlyPlayed = do
   _ <- writeCsvToDisk recentlyPlayed
-  return (stringToLazyText . buildRecentlyPlayedHTMLList . RP.tracks . RP.recentlyPlayed $ recentlyPlayed)
+  return (stringToLazyText . buildRecentlyPlayedHTMLList . RPWA.tracks . RPWA.recentlyPlayed $ recentlyPlayed)
 
-getNextRecentlyPlayedTracksHref :: RP.RecentlyPlayed -> LT.Text
-getNextRecentlyPlayedTracksHref recentlyPlayed = stringToLazyText . RP.next $ recentlyPlayed
+getNextRecentlyPlayedTracksHref :: RPWA.RecentlyPlayedWithArtist -> LT.Text
+getNextRecentlyPlayedTracksHref recentlyPlayed = stringToLazyText . RPWA.next $ recentlyPlayed
 
-getArtistsFromTrack :: RP.Track -> String
-getArtistsFromTrack track = concat . intersperse ", " $ fmap (\artist -> (RP.artistName artist)) (RP.artists track)
+getArtistsFromTrack :: RPWA.Track -> String
+getArtistsFromTrack track = concat . intersperse ", " $ fmap (\artist -> ((RPWA.artistName artist) ++ " - " ++ (intercalate ", " $ RPWA.genres artist))) (RPWA.artists track)
 
-buildRecentlyPlayedHTMLList :: [RP.Track] -> String
+buildRecentlyPlayedHTMLList :: [RPWA.Track] -> String
 buildRecentlyPlayedHTMLList [] = []
-buildRecentlyPlayedHTMLList (tracks) = concat . intersperse "<br>" $ fmap (\track -> "<li>" ++ (RP.name track) ++ " - " ++ (Writers.HTML.getArtistsFromTrack track) ++ "</li>") tracks
+buildRecentlyPlayedHTMLList (tracks) = concat . intersperse "<br>" $ fmap (\track -> "<li>" ++ (RPWA.name track) ++ " - " ++ (Writers.HTML.getArtistsFromTrack track) ++ "</li>") tracks
 
 -- buildResponse :: LT.Text -> LT.Text -> m LT.Text
 buildResponse recentlyPlayedHTML nextHTML = do
+        liftIO $ putStrLn "Parsing Dashboard HTML"
         dashboardHtml <- liftIO . DTIO.readFile $ "./static/dashboard.html"
         return $ LT.replace "{{nextHTML}}" nextHTML (LT.replace "{{recentlyPlayedHTML}}" recentlyPlayedHTML (LT.fromStrict dashboardHtml))
