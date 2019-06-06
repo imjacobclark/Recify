@@ -29,10 +29,11 @@ authorizationScope = "user-read-recently-played, user-top-read"
 authorizationResponseType = "code"
 callbackUri = "http://localhost:3000/callback"
 
-port = 3000
-
 recify :: IO ()
-recify = scotty port $ do
+recify = do
+  port <- fmap read $ getEnv "port"
+
+  scotty port $ do
     get "/" $ do
       homeHtml <- (liftIO $ DTIO.readFile "./static/home.html")
       html $ mconcat [(LT.fromStrict homeHtml)]  
