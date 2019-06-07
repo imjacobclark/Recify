@@ -18,4 +18,4 @@ getAccessTokenFromPayload :: L.ByteString -> AccessToken
 getAccessTokenFromPayload json = AccessToken (json ^. key "access_token" . _String)
 
 writeAccessTokenToDisk :: L.ByteString -> IO ()
-writeAccessTokenToDisk accessToken = writeFile "./accessToken.txt" . T.unpack . getAccessToken . getAccessTokenFromPayload $ accessToken
+writeAccessTokenToDisk = writeFile "./accessToken.txt" . T.unpack . getAccessToken . getAccessTokenFromPayload

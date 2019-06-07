@@ -8,10 +8,10 @@ import qualified Data.ByteString.Char8 as B
 import qualified Data.Text as T
 
 textToByteString :: T.Text -> B.ByteString
-textToByteString x = TE.encodeUtf8 x
+textToByteString = TE.encodeUtf8
 
 lazyByteStringToLazyText :: L.ByteString -> LT.Text
-lazyByteStringToLazyText x = TLE.decodeUtf8 x
+lazyByteStringToLazyText = TLE.decodeUtf8
 
 stringToLazyText :: String -> LT.Text
-stringToLazyText x = LT.pack x
+stringToLazyText = LT.pack

@@ -31,4 +31,4 @@ buildResponse :: MonadIO m => LT.Text -> LT.Text -> m LT.Text
 buildResponse recentlyPlayedHTML nextHTML = do
         liftIO $ putStrLn "Parsing Dashboard HTML"
         dashboardHtml <- liftIO . DTIO.readFile $ "./static/dashboard.html"
-        return $ LT.replace "{{nextHTML}}" nextHTML (LT.replace "{{recentlyPlayedHTML}}" recentlyPlayedHTML (LT.fromStrict dashboardHtml))
+        return $ LT.replace "{{nextHTML}}" nextHTML (LT.replace "{{recentlyPlayedHTML}}" recentlyPlayedHTML $ LT.fromStrict dashboardHtml)
