@@ -30,7 +30,7 @@ dependencies:
 - aeson
 - lens-aeson
 - vector
-
+- cookie
 library:
   source-dirs: src
 

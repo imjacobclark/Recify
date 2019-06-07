@@ -7,6 +7,7 @@ import Network.HTTP.Types (status302)
 import Control.Monad.IO.Class
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.IO as DTIO
+import qualified Data.Text as DT
 import Data.Either
 import System.Environment
 
@@ -16,6 +17,7 @@ import Writers.HTML
 
 import Services.Spotify.Authorization
 import Services.Spotify.Artist
+import Services.Cookies
 
 import Clients.Spotify.Authorization
 import Clients.Spotify.RecentlyPlayed
@@ -50,21 +52,24 @@ recify = do
 
     get "/callback" $ do
       authorizationCode <- fmap AuthorizationCode $ param "code"
-      _ <- liftIO $ exchangeAccessTokenForAuthorizationCode authorizationCode fqdn >>= writeAccessTokenToDisk
+      accessToken <- liftIO $ exchangeAccessTokenForAuthorizationCode authorizationCode fqdn
+      writeAccessTokenCookies accessToken
       status status302
       setHeader "X-Forwarded-From" "/callback"
       setHeader "Location" $ LT.pack "/dashboard"
 
     get "/dashboard" $ do
-      accessTokenFileData <- (liftIO $ DTIO.readFile "./accessToken.txt")
-      let accessToken = textToByteString . getAccessToken . AccessToken $ accessTokenFileData
+      cookies <- getCookies
+      accessTokenData <- case cookies of
+        Just cookies -> return $ DT.pack . LT.unpack $ ((LT.splitOn "=" ((LT.splitOn ";" $ cookies) !! 0)) !! 1) -- this is pretty bad, we check for the actual token, there is no guarantees this will always work...
+        Nothing -> return $ ""
 
-      recentlyPlayedTrackData <- liftIO . fetchRecentlyPlayedTracks $ accessToken
+      recentlyPlayedTrackData <- liftIO . fetchRecentlyPlayedTracks $ accessTokenData
       let maybeMarshalledRecentlyPlayed = marshallRecentlyPlayedData recentlyPlayedTrackData
 
       case maybeMarshalledRecentlyPlayed of
         Right marshalledRecentlyPlayed -> do
-          maybeMarshalledArtistsData <- liftIO . getArtistData accessToken $ marshalledRecentlyPlayed
+          maybeMarshalledArtistsData <- liftIO . getArtistData accessTokenData $ marshalledRecentlyPlayed
 
           artists <- case maybeMarshalledArtistsData of
             Right marshalledArtistsData -> return marshalledArtistsData

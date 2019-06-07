@@ -16,7 +16,7 @@ PRs welcome, feedback welcome - once "complete" I'll probably write up my approa
 
 ## Features 🚀
 
-- [x] Authentication with Spotify via OAuth
+- [x] Authentication with Spotify via OAuth 2.0
 - [x] Obtain a list of the most recent (latest 25) songs and basic metadata (Artist, Song Title, Explicit?)
 - [x] Render those songs as HTML locally
 - [x] Produce a CSV of songs (artist, song title, genre) locally on disk
@@ -29,10 +29,17 @@ PRs welcome, feedback welcome - once "complete" I'll probably write up my approa
 - [ ] Listen and update DynamoDB when new tracks are played
 - [ ] Populate DynamoDB with non-listened to song data to establish our two distinct classes (listened too [liked] verses non-listened too [disliked])
 - [ ] Perform a train a K Nearest Neighbours algorithm and to generate song recomendations from todays charts
+- [ ] Add an authentication provider to protect delegated access tokens
 
 ## Warning 🚨
 
-Whilst Recify only requests a scope of `user-read-recently-played, user-top-read` please be aware that tokens are stored in a single text file on disk after the initial authorization token is exchanged for an access token - *this will eventually be AES Encrypted and stored remotley*. `accessToken.txt` is `.gitignored`, do not share this file or its contents, it is advised you clean this file up when you're done - whilst the requested scope is non-destructive, better to be safe than sorry.
+There is no authentication implemented in Recify and access tokens are stored in plaintext as `HttpOnly` cookies. 
+
+Recify provides no guarantees that the person accessing Recify is the Resource Owner. Authroization to access a users profile data is simplfy delegated to Recify from Spotify by approval of a Resource Owner at some point in time, there are no guarantees they are still present once the Access Token has been minted. Recify only requests a scope of `user-read-recently-played, user-top-read`, which is a non-destructive, read only grant and discloses no personal information about the user.
+
+`HttpOnly` cookies means that the cookie cannot be lifted by arbitary JavaScript on the page, so is immune to XSS attack (it is only present during the HTTP request, response lifecycle). However it would not stop a third party actor physically accessing the device and lifting the cookie from the users browser.
+
+Adding proper Authentication to Recify is a "Coming Soon" feature, this would allow a user to identify with a third party service. With this in place Recify could validate that a user is who they say they are and once satisfied, allow access to the Spotify OAuth 2.0 Access Token Recify will be storing and refreshing on behalf of the user.
 
 ## Running 🔌
 
@@ -56,6 +63,18 @@ Spotify also needs Client ID sent in plain text (this is OK as its not the secre
 
 ```shell
 $ export clientID="replace_with_your_client_id"
+```
+
+Spotify also needs your fully qualified domain name that you configured when creating your app in the Spotify developer console.
+
+```shell
+$ export clientID="http://localhost:3000/callback"
+```
+
+You'll need to specify a port for Recify to bind to, e.g `3000`.
+
+```shell
+$ export PORT="3000"
 ```
 
 Finally we can compile and run the application.
