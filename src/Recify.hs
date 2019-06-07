@@ -64,12 +64,14 @@ recify = do
         Just cookies -> return $ DT.pack . LT.unpack $ ((LT.splitOn "=" ((LT.splitOn ";" $ cookies) !! 0)) !! 1) -- this is pretty bad, we check for the actual token, there is no guarantees this will always work...
         Nothing -> return $ ""
 
-      recentlyPlayedTrackData <- liftIO . fetchRecentlyPlayedTracks $ accessTokenData
+      let accessToken = textToByteString . getAccessToken . AccessToken $ accessTokenData
+      
+      recentlyPlayedTrackData <- liftIO . fetchRecentlyPlayedTracks $ accessToken
       let maybeMarshalledRecentlyPlayed = marshallRecentlyPlayedData recentlyPlayedTrackData
-
+    
       case maybeMarshalledRecentlyPlayed of
         Right marshalledRecentlyPlayed -> do
-          maybeMarshalledArtistsData <- liftIO . getArtistData accessTokenData $ marshalledRecentlyPlayed
+          maybeMarshalledArtistsData <- liftIO . getArtistData accessToken $ marshalledRecentlyPlayed
 
           artists <- case maybeMarshalledArtistsData of
             Right marshalledArtistsData -> return marshalledArtistsData
