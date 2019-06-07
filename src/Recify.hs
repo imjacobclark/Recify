@@ -64,7 +64,7 @@ recify = do
         Just cookies -> return $ DT.pack . LT.unpack $ ((LT.splitOn "=" ((LT.splitOn ";" $ cookies) !! 0)) !! 1) -- this is pretty bad, we check for the actual token, there is no guarantees this will always work...
         Nothing -> return $ ""
 
-      let accessToken = textToByteString . getAccessToken . AccessToken $ accessTokenData
+      let accessToken = textToByteString . getAccessToken . AccessToken $ accessTokenData -- if this is empty we need to stop as authorization hasn't occoured 
       
       recentlyPlayedTrackData <- liftIO . fetchRecentlyPlayedTracks $ accessToken
       let maybeMarshalledRecentlyPlayed = marshallRecentlyPlayedData recentlyPlayedTrackData
