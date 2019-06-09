@@ -77,7 +77,13 @@ Once this successfully completes, you can open [localhost:3000](localhost:3000) 
 
 ### Heroku
 
-Coming soon...
+Create your Heroku project [as you normally would](https://devcenter.heroku.com/categories/command-line) and attach the Stack buildpack.
+
+```shell
+$ heroku buildpacks:set https://github.com/mfine/heroku-buildpack-stack replace_with_your_heroku_app_name
+```
+
+Then deploy as normal, the Procfile already exists within this repo.
 
 ## Technical Details ✍️
 
