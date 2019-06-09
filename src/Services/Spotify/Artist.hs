@@ -4,6 +4,7 @@ module Services.Spotify.Artist where
 
 import Data.ByteString.Internal
 import Data.List
+import Control.Monad.IO.Class
 
 import Types.RecentlyPlayed
 import Types.Artist

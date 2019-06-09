@@ -38,7 +38,7 @@ recify = do
   port <- fmap read $ getEnv "PORT"
   fqdn <- liftIO $ getEnv "fqdn"
 
-  let scottyOptions = def { verbose = 1, settings = setPort port $ settings def }
+  let scottyOptions = def { settings = setPort port $ settings def }
 
   scottyOpts scottyOptions $ do
     get "/" $ do

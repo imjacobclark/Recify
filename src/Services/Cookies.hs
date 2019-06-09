@@ -25,12 +25,12 @@ getHead (x:xs) = x
 getTail [] = ""
 getTail (_:xs) = (getHead xs)
 
-getAccessTokenFromCookies :: ActionM ([(LT.Text, LT.Text)])
+getAccessTokenFromCookies :: ActionM [(LT.Text, LT.Text)]
 getAccessTokenFromCookies = do
     cookies <- getCookies
     case cookies of
         Just cookies -> return $ Prelude.filter (
-            \tuple -> (fst $ tuple) == LT.pack "authToken") . fmap (
+            \tuple -> (fst $ tuple) == LT.pack " authToken") . fmap (
                 \c -> (
                     getHead $ (LT.splitOn "=" c), getTail $ (LT.splitOn "=" c))) . LT.splitOn ";" $ cookies
         Nothing -> return $ [("", "")]
