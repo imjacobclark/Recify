@@ -43,6 +43,8 @@ Adding proper Authentication to Recify is a "Coming Soon" feature, this would al
 
 ## Running 🔌
 
+### Locally
+
 First, [ensure you have Stack installed](https://docs.haskellstack.org/en/stable/README/), this project uses it to compile and execute Haskell code.
 
 You'll need a [Spotify developer account](https://developer.spotify.com/dashboard/applications) where you'll create a new application in order to obtain you applications *Client ID* and *Client Secret* - the Client Secret should be treated as you would a normal password. These two values together with some processing produce your bearer token which identifies you to the Spotify API and allow you to configure callbacks, they also ensure clients don't abuse the Spotify API.
@@ -65,25 +67,17 @@ Spotify also needs Client ID sent in plain text (this is OK as its not the secre
 $ export clientID="replace_with_your_client_id"
 ```
 
-Spotify also needs your fully qualified domain name that you configured when creating your app in the Spotify developer console.
+Lets grab our dependencies, compile and start Recify. The `local-dev` script starts Recify on port 3000 via localhost.
 
 ```shell
-$ export clientID="http://localhost:3000/callback"
-```
-
-You'll need to specify a port for Recify to bind to, e.g `3000`.
-
-```shell
-$ export PORT="3000"
-```
-
-Finally we can compile and run the application.
-
-```shell
-$ stack build && stack exec recify-exe
+$ bash scripts/local-dev.sh
 ```
 
 Once this successfully completes, you can open [localhost:3000](localhost:3000) in your web browser and follow the instructions.
+
+### Heroku
+
+Coming soon...
 
 ## Technical Details ✍️
 

@@ -31,6 +31,8 @@ dependencies:
 - lens-aeson
 - vector
 - cookie
+- data-default-class
+- warp
 library:
   source-dirs: src
 

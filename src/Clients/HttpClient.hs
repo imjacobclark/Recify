@@ -7,6 +7,7 @@ import qualified Data.ByteString.Char8 as B
 import qualified Network.Wreq as W
 import Control.Monad.IO.Class
 import Control.Lens
+import Data.Monoid 
 
 getWithBearerToken :: B.ByteString -> String -> IO L.ByteString
 getWithBearerToken token endpoint = do

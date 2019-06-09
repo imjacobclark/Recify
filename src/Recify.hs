@@ -3,7 +3,10 @@
 module Recify where
 
 import Web.Scotty
+import Data.Default.Class (def)
+import Network.Wai.Handler.Warp (setPort)
 import Network.HTTP.Types (status302)
+
 import Control.Monad.IO.Class
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.IO as DTIO
@@ -35,7 +38,9 @@ recify = do
   port <- fmap read $ getEnv "PORT"
   fqdn <- liftIO $ getEnv "fqdn"
 
-  scotty port $ do
+  let scottyOptions = def { verbose = 0, settings = setPort port $ settings def }
+
+  scottyOpts scottyOptions $ do
     get "/" $ do
       homeHtml <- liftIO . DTIO.readFile $ "./static/home.html"
       html $ mconcat [(LT.fromStrict homeHtml)]
@@ -59,12 +64,9 @@ recify = do
       setHeader "Location" $ LT.pack "/dashboard"
 
     get "/dashboard" $ do
-      cookies <- getCookies
-      accessTokenData <- case cookies of
-        Just cookies -> return $ DT.pack . LT.unpack $ ((LT.splitOn "=" ((LT.splitOn ";" $ cookies) !! 0)) !! 1) -- this is pretty bad, we check for the actual token, there is no guarantees this will always work...
-        Nothing -> return $ ""
-
-      let accessToken = textToByteString . getAccessToken . AccessToken $ accessTokenData -- if this is empty we need to stop as authorization hasn't occoured 
+      accessTokenData <- getAccessTokenFromCookies
+      let cookie = DT.pack . LT.unpack . snd $ accessTokenData !! 0 -- need to check if anything exists in the array and die if not 
+      let accessToken = textToByteString . getAccessToken . AccessToken $ cookie -- if this is empty we need to stop as authorization hasn't occoured 
       
       recentlyPlayedTrackData <- liftIO . fetchRecentlyPlayedTracks $ accessToken
       let maybeMarshalledRecentlyPlayed = marshallRecentlyPlayedData recentlyPlayedTrackData
