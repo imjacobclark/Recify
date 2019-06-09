@@ -30,7 +30,7 @@ getAccessTokenFromCookies = do
     cookies <- getCookies
     case cookies of
         Just cookies -> return $ Prelude.filter (
-            \tuple -> (fst $ tuple) == LT.pack " authToken") . fmap (
+            \tuple -> (TXL.strip (fst $ tuple)) == LT.pack "authToken") . fmap (
                 \c -> (
                     getHead $ (LT.splitOn "=" c), getTail $ (LT.splitOn "=" c))) . LT.splitOn ";" $ cookies
         Nothing -> return $ [("", "")]
