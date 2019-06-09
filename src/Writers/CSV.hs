@@ -34,14 +34,18 @@ seperateRowsByDelimiter = concat . intersperse "\n" . fmap seperateFieldsByDelim
 getArtistsFromTrack :: RPWA.Track -> String
 getArtistsFromTrack track = concat . intersperse " | " $ fmap (\artist -> RPWA.artistName artist) (RPWA.artists track)
 
-createCSV :: RPWA.RecentlyPlayedWithArtist -> CSV
-createCSV recentlyPlayed = CSV . fmap (\track ->
+
+createRowsFromTracks :: [RPWA.Track] -> [Row]
+createRowsFromTracks = fmap (\track ->
     Row [
         Field . RPWA.name $ track,
         Field . getArtistsFromTrack $ track,
         Field . boolToString . RPWA.explicit $ track
         ]
-    ) . RPWA.tracks . RPWA.recentlyPlayed $ recentlyPlayed
+      )
+
+createCSV :: RPWA.RecentlyPlayedWithArtist -> CSV
+createCSV recentlyPlayed = CSV . createRowsFromTracks . RPWA.tracks . RPWA.recentlyPlayed $ recentlyPlayed
 
 writeCsvToDisk :: RPWA.RecentlyPlayedWithArtist -> IO ()
 writeCsvToDisk = writeFile "./recentlyPlayed.csv" . seperateRowsByDelimiter . csv . createCSV

@@ -31,6 +31,10 @@
                 cursor: pointer;
                 text-decoration: underline;
             }
+
+            table, th, td {
+                border: 1px  solid black;
+            }
         </style>
     </head>
     <body>
@@ -48,12 +52,38 @@
             </form>
 
             <hr/>
+
+            <h2>Warning</h2>
             
-            <p><strong>Warning</strong>: There is no authentication implemented in Recify and access tokens are stored in plaintext as <i>HttpOnly</i> cookies. Recify provides no guarantees that the person accessing Recify is the Resource Owner. Authroization to access a users profile data is simplfy delegated to Recify from Spotify by approval of a Resource Owner at some point in time, there are no guarantees they are still present once the Access Token has been minted. Recify only requests a scope of `user-read-recently-played, user-top-read`, which is a non-destructive, read only grant and discloses no personal information about the user.</p>
+            <p>There is no authentication implemented in Recify and access tokens are stored in plaintext as <i>HttpOnly</i> cookies. Recify provides no guarantees that the person accessing Recify is the Resource Owner. Authroization to access a users profile data is simplfy delegated to Recify from Spotify by approval of a Resource Owner at some point in time, there are no guarantees they are still present once the Access Token has been minted. Recify only requests a scope of `user-read-recently-played, user-top-read`, which is a non-destructive, read only grant and discloses no personal information about the user.</p>
 
             <p>Use at your own risk and clear you cookies when you're done!</p>
             
             <hr />
+
+            <h2>Cookies</h2>
+
+            <p>Recify stores cookies on your device, by using Recify you agree to the storage of the below cookies.</p>
+
+            <table>
+                <tr>
+                    <th>Cookie Name</th>
+                    <th>Cookie Description</th>
+                    <th>Category</th>
+                </tr>
+                <tr>
+                    <td>authToken</td>
+                    <td>Used to interact with the Spotify API on behalf of the user.</td>
+                    <td>Strictly necessary</td>
+                </tr>
+                <tr>
+                    <td>__cfduid</td>
+                    <td>Used to identify individual clients behind a shared IP address and apply security settings on a per-client basis.</td>
+                    <td>Strictly necessary</td>
+                </tr>
+            </table>
+
+            <hr/>
             
             <footer>Recify and <a href="https://www.jacobclark.xyz">Jacob Clark</a> 2019 &middot; <a href='https://www.github.com/imjacobclark/recify' style='color: #1db954'>Recify on GitHub</a></footer>
         </main>
