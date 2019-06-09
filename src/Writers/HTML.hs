@@ -20,12 +20,16 @@ getRecentlyPlayedHTMLResponse recentlyPlayed = do
 getNextRecentlyPlayedTracksHref :: RPWA.RecentlyPlayedWithArtist -> LT.Text
 getNextRecentlyPlayedTracksHref = stringToLazyText . RPWA.next
 
+getArtistNames artists = intercalate ", " $ fmap RPWA.artistName artists
+
+getArtistGenres artists = intercalate ", " . concat $ fmap RPWA.genres artists
+
 getArtistsFromTrack :: RPWA.Track -> String
-getArtistsFromTrack track = concat . intersperse ", " $ fmap (\artist -> ((RPWA.artistName artist) ++ " - " ++ (intercalate ", " $ RPWA.genres artist))) (RPWA.artists track)
+getArtistsFromTrack track = "<td>" ++ (getArtistNames (RPWA.artists track)) ++ "</td><td>" ++ (getArtistGenres (RPWA.artists track)) ++ "</td>"
 
 buildRecentlyPlayedHTMLList :: [RPWA.Track] -> String
 buildRecentlyPlayedHTMLList [] = []
-buildRecentlyPlayedHTMLList tracks = concat . intersperse "<br>" $ fmap (\track -> "<li>" ++ (RPWA.name track) ++ " - " ++ (Writers.HTML.getArtistsFromTrack track) ++ "</li>") tracks
+buildRecentlyPlayedHTMLList tracks = concat $ fmap (\track -> "<tr><td>" ++ (RPWA.name track) ++ "</td>" ++ (Writers.HTML.getArtistsFromTrack track) ++ "</tr>") tracks
 
 buildResponse :: MonadIO m => LT.Text -> LT.Text -> m LT.Text
 buildResponse recentlyPlayedHTML nextHTML = do

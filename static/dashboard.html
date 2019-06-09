@@ -18,6 +18,10 @@
             a {
                 color: #1db954
             }
+
+            table, th, td {
+                border: 1px  solid black;
+            }
         </style>
     </head>
     <body>
@@ -27,7 +31,14 @@
             <hr />
             
             <p>Here is your recently played track list:</p>
-            <ul>{{recentlyPlayedHTML}}</ul>
+            <table>
+                <tr>
+                    <th>Title</th>
+                    <th>Artist</th>
+                    <th>Genres</th>
+                </tr>
+                {{recentlyPlayedHTML}}
+            </table>
             <p>Next: {{nextHTML}}</p>
 
             <hr />
