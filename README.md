@@ -83,7 +83,7 @@ Create your Heroku project [as you normally would](https://devcenter.heroku.com/
 $ heroku buildpacks:set https://github.com/mfine/heroku-buildpack-stack replace_with_your_heroku_app_name
 ```
 
-Then deploy as normal, the Procfile already exists within this repo.
+You'll need to set the `bearer`, `clientID` and `fqdn` environment variables within your Heroku app, once set you can deploy as normal, the Procfile already exists within this repo.
 
 ## Technical Details ✍️
 

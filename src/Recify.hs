@@ -63,6 +63,10 @@ recify = do
       setHeader "X-Forwarded-From" "/callback"
       setHeader "Location" $ LT.pack "/dashboard"
 
+    get "/csv" $ do
+      file <- liftIO $ readFile "./recentlyPlayed.csv"
+      html $ mconcat ["<pre>", LT.pack file, "</pre>"]
+
     get "/dashboard" $ do
       accessTokenData <- getAccessTokenFromCookies
       let cookie = DT.pack . LT.unpack . snd $ accessTokenData !! 0 -- need to check if anything exists in the array and die if not 
@@ -70,7 +74,7 @@ recify = do
 
       recentlyPlayedTrackData <- liftIO . fetchRecentlyPlayedTracks $ accessToken
       let maybeMarshalledRecentlyPlayed = marshallRecentlyPlayedData recentlyPlayedTrackData
-
+      
       case maybeMarshalledRecentlyPlayed of
         Right marshalledRecentlyPlayed -> do
           maybeMarshalledArtistsData <- liftIO . getArtistData accessToken $ marshalledRecentlyPlayed
