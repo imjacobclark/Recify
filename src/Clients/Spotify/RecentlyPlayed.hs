@@ -10,4 +10,4 @@ import Control.Lens
 import Clients.HttpClient
 
 fetchRecentlyPlayedTracks :: B.ByteString -> IO L.ByteString
-fetchRecentlyPlayedTracks token = getWithBearerToken token "https://api.spotify.com/v1/me/player/recently-played?limit=50"
+fetchRecentlyPlayedTracks token = getWithBearerToken token "https://api.spotify.com/v1/me/player/recently-played"
