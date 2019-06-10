@@ -66,28 +66,28 @@ recify = do
       setHeader "Location" $ LT.pack "/dashboard"
 
     get "/dashboard" $ do
-      log "GET /dashboard"
+      Recify.log "GET /dashboard"
       accessTokenData <- getAccessTokenFromCookies
-      log "Got access token data from cookies"
+      Recify.log "Got access token data from cookies"
       let cookie = DT.pack . LT.unpack . snd $ accessTokenData !! 0 -- need to check if anything exists in the array and die if not 
-      log "Got access token"
+      Recify.log "Got access token"
       let accessToken = textToByteString . getAccessToken . AccessToken $ cookie -- if this is empty we need to stop as authorization hasn't occoured 
-      log "Parsed access token"
+      Recify.log "Parsed access token"
 
       recentlyPlayedTrackData <- liftIO . fetchRecentlyPlayedTracks $ accessToken
-      log "Fetched recently played tracks"
+      Recify.log "Fetched recently played tracks"
       let maybeMarshalledRecentlyPlayed = marshallRecentlyPlayedData recentlyPlayedTrackData
-      log "Marshalled recently played tracks"
+      Recify.log "Marshalled recently played tracks"
 
       case maybeMarshalledRecentlyPlayed of
         Right marshalledRecentlyPlayed -> do
           maybeMarshalledArtistsData <- liftIO . getArtistData accessToken $ marshalledRecentlyPlayed
-          log "Fetched and marshalled artists"
+          Recify.log "Fetched and marshalled artists"
 
           artists <- case maybeMarshalledArtistsData of
             Right marshalledArtistsData -> return marshalledArtistsData
             Left error                  -> return [] -- TODO this needs to error, no point continuing
-          log "Unwrapped artist data"
+          Recify.log "Unwrapped artist data"
 
           let recentlyPlayedWithArtist = RPWA.RecentlyPlayedWithArtist {
             RPWA.recentlyPlayed = RPWA.Tracks {
@@ -106,13 +106,13 @@ recify = do
             },
             RPWA.next = Types.RecentlyPlayed.next $ marshalledRecentlyPlayed
           }
-          log "Created recentlyPlayedWithArtist data structure"
+          Recify.log "Created recentlyPlayedWithArtist data structure"
 
           recentlyPlayedHTMLResponse <- liftIO . getRecentlyPlayedHTMLResponse $ recentlyPlayedWithArtist
-          log "Produced HTML response"
+          Recify.log "Produced HTML response"
 
           let nextRecentlyPlayedTracksHref = getNextRecentlyPlayedTracksHref recentlyPlayedWithArtist
-          log "Produced next link HTML response"
+          Recify.log "Produced next link HTML response"
 
           response <- buildResponse recentlyPlayedHTMLResponse nextRecentlyPlayedTracksHref
           html $ mconcat [response]
