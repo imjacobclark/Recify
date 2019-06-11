@@ -51,4 +51,4 @@ createCSV :: RPWA.RecentlyPlayedWithArtist -> CSV
 createCSV recentlyPlayed = CSV . createRowsFromTracks . RPWA.tracks . RPWA.recentlyPlayed $ recentlyPlayed
 
 writeCsvToDisk :: RPWA.RecentlyPlayedWithArtist -> IO ()
-writeCsvToDisk = writeFile "./data/recentlyPlayed.csv" . seperateRowsByDelimiter . csv . createCSV
+writeCsvToDisk = writeFile "./recentlyPlayed.csv" . seperateRowsByDelimiter . csv . createCSV

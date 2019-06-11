@@ -26,4 +26,4 @@ cabal.project.local~
 accessToken.txt
 recentlyPlayed.csv
 .DS_Store
-./data/*.csv
+./recentlyPlayed.csv

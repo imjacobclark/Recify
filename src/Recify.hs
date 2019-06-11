@@ -64,7 +64,7 @@ recify = do
       setHeader "Location" $ LT.pack "/dashboard"
 
     get "/csv" $ do
-      file <- liftIO $ readFile "./data/recentlyPlayed.csv"
+      file <- liftIO $ readFile "./recentlyPlayed.csv"
       html $ mconcat ["<pre>", LT.pack file, "</pre>"]
 
     get "/dashboard" $ do
