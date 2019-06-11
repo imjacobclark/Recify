@@ -114,7 +114,8 @@ recify = do
           }
           liftIO $ putStrLn ("Marshalled recentlyPlayedWithArtist data " ++ (show recentlyPlayedWithArtist))
 
-          -- recentlyPlayedHTMLResponse <- liftIO . getRecentlyPlayedHTMLResponse $ recentlyPlayedWithArtist
+          recentlyPlayedHTMLResponse <- liftIO . getRecentlyPlayedHTMLResponse $ recentlyPlayedWithArtist
+          liftIO $ putStrLn ("recentlyPlayedHTMLResponse " ++ (show recentlyPlayedHTMLResponse))
           -- let nextRecentlyPlayedTracksHref = getNextRecentlyPlayedTracksHref recentlyPlayedWithArtist
           -- liftIO $ putStrLn ("Created HTML response" ++ (show nextRecentlyPlayedTracksHref))
 
