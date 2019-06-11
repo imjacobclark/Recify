@@ -115,13 +115,12 @@ recify = do
           liftIO $ putStrLn ("Marshalled recentlyPlayedWithArtist data " ++ (show recentlyPlayedWithArtist))
 
           recentlyPlayedHTMLResponse <- liftIO . getRecentlyPlayedHTMLResponse $ recentlyPlayedWithArtist
-          liftIO $ putStrLn ("recentlyPlayedHTMLResponse " ++ (show recentlyPlayedHTMLResponse))
-          -- let nextRecentlyPlayedTracksHref = getNextRecentlyPlayedTracksHref recentlyPlayedWithArtist
-          -- liftIO $ putStrLn ("Created HTML response" ++ (show nextRecentlyPlayedTracksHref))
+          let nextRecentlyPlayedTracksHref = getNextRecentlyPlayedTracksHref recentlyPlayedWithArtist
+          liftIO $ putStrLn ("Created HTML response" ++ (show nextRecentlyPlayedTracksHref))
 
-          -- response <- buildResponse recentlyPlayedHTMLResponse nextRecentlyPlayedTracksHref
-          -- liftIO $ putStrLn ("Built HTML response" ++ (show response))
+          response <- buildResponse recentlyPlayedHTMLResponse nextRecentlyPlayedTracksHref
+          liftIO $ putStrLn ("Built HTML response" ++ (show response))
 
-          html $ mconcat ["test"]
+          html $ mconcat [response]
         Left error ->
           html $ mconcat ["Something went wrong getting data from Spotify, refresh to try again."]
