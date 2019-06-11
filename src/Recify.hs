@@ -87,8 +87,12 @@ recify = do
           liftIO $ putStrLn "Fetched artist data"
 
           artists <- case maybeMarshalledArtistsData of
-            Right marshalledArtistsData -> return marshalledArtistsData
-            Left error                  -> return [] -- TODO this needs to error, no point continuing
+            Right marshalledArtistsData -> do 
+              liftIO $ putStrLn "Right marshalled artist data"
+              return marshalledArtistsData
+            Left error                  -> do
+              liftIO $ putStrLn error
+              return [] -- TODO this needs to error, no point continuing
           liftIO $ putStrLn ("Marshalled artist data" ++ (show artists))
 
           let recentlyPlayedWithArtist = RPWA.RecentlyPlayedWithArtist {
