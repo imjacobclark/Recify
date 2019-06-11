@@ -14,7 +14,7 @@ import Utils.String
 
 getRecentlyPlayedHTMLResponse :: RPWA.RecentlyPlayedWithArtist -> IO LT.Text
 getRecentlyPlayedHTMLResponse recentlyPlayed = do
-  _ <- writeCsvToDisk recentlyPlayed
+  -- _ <- writeCsvToDisk recentlyPlayed
   return . stringToLazyText . buildRecentlyPlayedHTMLList . RPWA.tracks . RPWA.recentlyPlayed $ recentlyPlayed
 
 getNextRecentlyPlayedTracksHref :: RPWA.RecentlyPlayedWithArtist -> LT.Text
